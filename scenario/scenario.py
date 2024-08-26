@@ -10,11 +10,12 @@ from scenario.structs import *
 
 @dataclass
 class Scenario:
-    streams: List[Stream]
+    tt_streams: List[TTStream]
+    et_streams: List[ETStream]
     hyper_cycle: int
 
     def __init__(self, network: NetworkGraph, tt_streams_path: str, et_streams_path: str):
-        self.streams = []
+        self.tt_streams = []
         with open(tt_streams_path) as scenario_file:
             periods: Set[int] = set()
             # create stream objects
@@ -24,15 +25,22 @@ class Scenario:
                                                                      tt_stream.destination,
                                                                      network,
                                                                      tt_stream.frame_size_byte)
-                self.streams.append(tt_stream)
+                self.tt_streams.append(tt_stream)
                 periods.add(tt_stream.cycle_time_ns)
 
         self.hyper_cycle = math.lcm(*periods)
 
+        self.et_streams = []
         with open(et_streams_path) as scenario_file:
             # create stream objects
             for json_stream in json.load(scenario_file):
-                self.streams.append(ETStream(json_stream))
+                self.et_streams.append(ETStream(json_stream))
+
+    def get_et_stream_ids(self):
+        return [stream.stream_id for stream in self.et_streams]
+
+    def get_tt_stream_ids(self):
+        return [stream.stream_id for stream in self.tt_streams]
 
     def get_stream_ids(self):
-        return [stream.stream_id for stream in self.streams]
+        return self.get_tt_stream_ids() + self.get_et_stream_ids()

@@ -4,6 +4,8 @@ from docplex.cp.model import CpoModel
 from docplex.cp.solution import CpoSolveResult
 
 from eTSN.schedulingStructs import SchedulingParameters, CpVariables
+from scenario.scenario import Scenario
+from scenario.structs import TTStream, ETStream
 
 
 def solve_scheduling(parameters: SchedulingParameters) -> CpoSolveResult:
