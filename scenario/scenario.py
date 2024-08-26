@@ -34,6 +34,5 @@ class Scenario:
             for json_stream in json.load(scenario_file):
                 self.streams.append(ETStream(json_stream))
 
-
-def get_stream_ids(self):
-    return [stream.stream_id for stream in self.streams]
+    def get_stream_ids(self):
+        return [stream.stream_id for stream in self.streams]

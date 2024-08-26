@@ -47,10 +47,12 @@ class TTStream(Stream):
 @dataclass
 class ETStream(Stream):
     stream_type = StreamType.ET
+    ttStreamID: int
 
     min_inter_event_time_ns: int
-    survival_time_ns: int
 
     def __init__(self, et_stream):
         super().__init__(et_stream)
         self.route = et_stream['route']
+        self.ttStreamID = int(et_stream['ttStreamID'])
+        self.min_inter_event_time_ns = int(et_stream['min_inter_event_time_ns'])
