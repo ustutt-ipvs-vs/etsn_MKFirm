@@ -1,6 +1,5 @@
 import argparse
 import os
-import Routing
 from eTSN import eTSN
 from eTSN.schedulingStructs import SchedulingParameters
 from network.network_graph import NetworkGraph
@@ -15,6 +14,10 @@ parser.add_argument("-v", "--verbose", help="print a lot of debug outputs. Is ov
 parser.add_argument("--raw-output", help="If set, the output will be in a raw format. Overwrites the verbose flag.",
                     action='store_true')
 parser.add_argument("-o", "--output", type=str, help="Path to the output file", default='transmission_output.json')
+parser.add_argument("--cplex", type=str, help="Path to cplex executable", default=None)
+parser.add_argument("--threads", type=int, help="Number of threads to be used at most", default=4)
+parser.add_argument("--timelimit", type=int,
+                    help="solver time limit in seconds. Use negative values for unlimited.", default=120)
 
 args = parser.parse_args()
 raw_output = args.raw_output
@@ -23,7 +26,7 @@ verbose = args.verbose if not raw_output else False
 network = NetworkGraph(args.network)
 scenario = Scenario(network, args.tt_streams, args.et_streams)
 
-parameters = SchedulingParameters(network=network, scenario=scenario, verbose=verbose, raw_output=raw_output)
+parameters = SchedulingParameters(args)
 
 result = eTSN.solve_scheduling(parameters)
 
