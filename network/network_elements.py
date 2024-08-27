@@ -32,6 +32,9 @@ class EgressPort:
     def get_inter_frame_gap(self):
         return self.inter_frame_gap
 
+    def __hash__(self):
+        return hash(self.id)
+
 
 class NetworkNode:
     id: int
@@ -46,3 +49,9 @@ class NetworkNode:
 
     def get_neighbors(self):
         return [port.destination_node for port in self.ports]
+
+    def get_egress_port(self, egress_port_id: int):
+        for port in self.ports:
+            if port.id == egress_port_id:
+                return port
+        return None

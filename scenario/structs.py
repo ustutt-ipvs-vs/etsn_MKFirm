@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from network.network_elements import EgressPort
 
@@ -22,6 +22,7 @@ class Stream(ABC):
     destination: int
     route: List[EgressPort]
     frame_size_byte: int
+    deadline_ns: int
 
     def __init__(self, json_stream):
         if json_stream is not None:
@@ -31,6 +32,10 @@ class Stream(ABC):
             self.destination = int(json_stream['target'])
             self.frame_size_byte = int(json_stream['frame_size_byte'])
             deadline_ns: int
+
+    @abstractmethod
+    def get_period(self):
+        pass
 
 
 @dataclass
@@ -43,6 +48,9 @@ class TTStream(Stream):
         self.cycle_time_ns = int(tt_stream['cycle_time_ns'])
         self.deadline_ns = int(tt_stream['deadline_ns'])
 
+    def get_period(self):
+        return self.cycle_time_ns
+
 
 @dataclass
 class ETStream(Stream):
@@ -50,10 +58,15 @@ class ETStream(Stream):
     ttStreamID: int
     min_inter_event_time_ns: int
 
+    json_route: List[any]
+
     def __init__(self, et_stream):
         super().__init__(et_stream)
-        self.route = et_stream['route']
         self.ttStreamID = int(et_stream['ttStreamID'])
         self.min_inter_event_time_ns = int(et_stream['min_inter_event_time_ns'])
-        # TODO we need better value here. Maybe as aprt of the data generation.
-        self.deadline_ns = self.min_inter_event_time_ns / 2
+        self.json_route = et_stream['route']
+        # TODO we need better value here. Maybe as part of the data generation.
+        self.deadline_ns = int(self.min_inter_event_time_ns / 2)
+
+    def get_period(self):
+        return self.min_inter_event_time_ns

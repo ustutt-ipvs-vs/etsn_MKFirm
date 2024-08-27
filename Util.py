@@ -2,7 +2,7 @@ from scenario.scenario import Stream
 
 
 def get_frames_per_hc(stream: Stream, hyper_cycle: int) -> int:
-    return int(hyper_cycle / stream.cycle_time_ns)
+    return int(hyper_cycle / stream.get_period())
 
 
 def iterate_frames_per_hc(stream: Stream, hyper_cycle: int) -> range:

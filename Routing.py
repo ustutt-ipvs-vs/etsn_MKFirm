@@ -3,6 +3,7 @@ from queue import PriorityQueue
 from typing import Dict, List, Set
 from network.network_graph import NetworkGraph
 from network.network_elements import EgressPort
+from scenario.structs import ETStream
 
 
 def calculate_hop_delay_in_ns(network: NetworkGraph, egress_port: EgressPort, frame_size: int) -> int:
@@ -66,3 +67,14 @@ def get_dijkstra_shortest_path(source: int, destination: int, network: NetworkGr
 
     path.reverse()
     return path
+
+
+def get_route_from_json(et_stream: ETStream, network: NetworkGraph) -> List[EgressPort]:
+    route: List[EgressPort] = []
+
+    for json_link in et_stream.json_route:
+        source = int(json_link['from'])
+        egress_port_id = int(json_link['id'])
+        route.append(network.get_node(source).get_egress_port(egress_port_id))
+
+    return route

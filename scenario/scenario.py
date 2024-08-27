@@ -34,7 +34,9 @@ class Scenario:
         with open(et_streams_path) as scenario_file:
             # create stream objects
             for json_stream in json.load(scenario_file):
-                self.et_streams.append(ETStream(json_stream))
+                et_stream = ETStream(json_stream)
+                et_stream.route = Routing.get_route_from_json(et_stream, network)
+                self.et_streams.append(et_stream)
 
     def get_et_stream_ids(self):
         return [stream.stream_id for stream in self.et_streams]

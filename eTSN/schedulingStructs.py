@@ -1,12 +1,16 @@
 import argparse
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List
 from math import ceil
 
-from docplex.cp.expression import CpoIntVar, CpoIntervalVar
+from docplex.cp import expression
+from docplex.cp.expression import CpoIntervalVar
 
+import Util
+from network.network_elements import EgressPort
 from network.network_graph import NetworkGraph
 from scenario.scenario import Scenario
+from scenario.structs import Stream, StreamType
 
 
 @dataclass
@@ -31,58 +35,87 @@ class SchedulingParameters:
         self.raw_output = args.raw_output
 
 
-@dataclass
 class CpVariables:
     """Variables for the constraint programming model."""
 
     # todo create the cp variables here, so that the whole struct can be passed to a solver function
+    # stream, frame_cycle_number, egress_port_id -> List of transmission opportunities
+    _F_tt: Dict[int, Dict[int, Dict[int, List[CpoIntervalVar]]]]
+    _F_et: Dict[int, Dict[int, Dict[int, List[CpoIntervalVar]]]]
 
     def __init__(self, parameters: SchedulingParameters):
         # initialize the variables
-        pass
+        self._F_tt = prudent_slot_reservation(parameters.scenario)
+
+        # create the et stream variables
+        self._F_et = {}
+        for et_stream in parameters.scenario.et_streams:
+            self._F_et[et_stream.stream_id] = {}
+            for frame_cycle_number in Util.iterate_frames_per_hc(et_stream, parameters.scenario.hyper_cycle):
+                self._F_et[et_stream.stream_id][frame_cycle_number] = {}
+                egress_port: EgressPort
+                for egress_port in et_stream.route:
+                    self._F_et[et_stream.stream_id][frame_cycle_number][egress_port.id] = [expression.interval_var(
+                        start=(
+                            frame_cycle_number * et_stream.min_inter_event_time_ns,
+                            (frame_cycle_number + 1) * et_stream.min_inter_event_time_ns),
+                        end=(
+                            frame_cycle_number * et_stream.min_inter_event_time_ns,
+                            (frame_cycle_number + 1) * et_stream.min_inter_event_time_ns),
+                        length=egress_port.calculate_transmission_delay_in_ns_of(et_stream.frame_size_byte),
+                        name=f"et_stream_{et_stream.stream_id}_frame_{frame_cycle_number}_link_{egress_port.id}")]
+
+    def F(self, stream: Stream):
+        if stream.stream_type == StreamType.ET:
+            return self._F_et[stream.stream_id]
+        else:
+            return self._F_tt[stream.stream_id]
 
 
-def prudent_slot_reservation(scenario: Scenario) -> None:
-    # stream, frame_cycle_number, link_id
-    F: Dict[int, int, int, CpoIntervalVar] = {}
+def prudent_slot_reservation(scenario: Scenario) -> Dict[int, Dict[int, Dict[int, List[CpoIntervalVar]]]]:
+    # stream, frame_cycle_number, egress_port_id -> List of transmission opportunities
+    F: Dict[int, Dict[int, Dict[int, List[CpoIntervalVar]]]] = {}
 
     for tt_stream in scenario.tt_streams:
         stream_dict = {}
-        s_t_l = tt_stream.frame_size_byte
 
-        for frame_cycle_number in range(int(scenario.hyper_cycle / tt_stream.cycle_time_ns)):
+        for frame_cycle_number in Util.iterate_frames_per_hc(tt_stream, scenario.hyper_cycle):
             frame_cycle_dict = {}
 
-            for link in tt_stream.route:
-                frames_on_link: List[CpoIntervalVar] = [CpoIntervalVar(
+            for egress_port in tt_stream.route:
+                T = egress_port.calculate_transmission_delay_in_ns_of(tt_stream.frame_size_byte)
+
+                frames_on_link: List[CpoIntervalVar] = [expression.interval_var(
                     start=(
                         frame_cycle_number * tt_stream.cycle_time_ns,
                         (frame_cycle_number + 1) * tt_stream.cycle_time_ns),
                     end=(
                         frame_cycle_number * tt_stream.cycle_time_ns,
                         (frame_cycle_number + 1) * tt_stream.cycle_time_ns),
-                    length=link.calculate_transmission_delay_in_ns_of(s_t_l),
-                    name=f"stream_{tt_stream.stream_id}_frame_{frame_cycle_number}_link_{link.id}_#{0}")]
+                    length=T,
+                    name=f"stream_{tt_stream.stream_id}_frame_{frame_cycle_number}_link_{egress_port.id}_#{0}")]
 
                 for et_stream in scenario.et_streams:
-                    s_e_l = et_stream.frame_size_byte
                     s_e_T = et_stream.min_inter_event_time_ns
-                    if link in et_stream.route:
-                        T = link.calculate_transmission_delay_in_ns_of(tt_stream.frame_size_byte)
-                        '''
-                        TODO assume all frames have the same size
-                        '''
-                        n = s_e_l * ceil(s_t_l * (T / s_e_T))
+                    if egress_port in et_stream.route:
+
+                        # since we assume equal frame sizes, we can skip parts of the computation
+                        n = ceil(T / s_e_T)
                         # reserve the slot for the et stream
                         for i in range(n):  # +1 since we need also one slot for the tt stream
-                            frames_on_link.append(CpoIntervalVar(
+                            frames_on_link.append(expression.interval_var(
                                 start=(
                                     frame_cycle_number * tt_stream.cycle_time_ns,
                                     (frame_cycle_number + 1) * tt_stream.cycle_time_ns),
                                 end=(
                                     frame_cycle_number * tt_stream.cycle_time_ns,
                                     (frame_cycle_number + 1) * tt_stream.cycle_time_ns),
-                                length=link.calculate_transmission_delay_in_ns_of(s_t_l),
-                                name=f"stream_{tt_stream.stream_id}_frame_{frame_cycle_number}_link_{link.id}_#{len(frames_on_link)}"))
-                frame_cycle_dict[link.id] = frames_on_link
-            # TODO continue here
+                                length=T,
+                                name=f"stream_{tt_stream.stream_id}_frame_{frame_cycle_number}_link_{egress_port.id}_#{len(frames_on_link)}"))
+                frame_cycle_dict[egress_port.id] = frames_on_link
+                # end of route loop
+            stream_dict[frame_cycle_number] = frame_cycle_dict
+            # end of frame loop
+        F[tt_stream.stream_id] = stream_dict
+        # end of tt stream loop
+    return F
