@@ -1,6 +1,7 @@
 import argparse
 import os
 from eTSN import eTSN
+from eTSN.output_writer import write_result_to_json
 from eTSN.schedulingStructs import SchedulingParameters
 from network.network_graph import NetworkGraph
 from scenario.scenario import Scenario
@@ -30,6 +31,4 @@ parameters = SchedulingParameters(args)
 
 result = eTSN.solve_scheduling(parameters)
 
-if '/' in str(args.output) and not os.path.isdir(os.path.basename(args.output)):
-    os.makedirs(os.path.basename(args.output), exist_ok=True)
-# write_result_to_json(result, parameters, args.output)
+write_result_to_json(result, parameters, args.output)
