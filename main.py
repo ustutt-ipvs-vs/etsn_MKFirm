@@ -19,16 +19,11 @@ parser.add_argument("--cplex", type=str, help="Path to cplex executable", defaul
 parser.add_argument("--threads", type=int, help="Number of threads to be used at most", default=4)
 parser.add_argument("--timelimit", type=int,
                     help="solver time limit in seconds. Use negative values for unlimited.", default=120)
+parser.add_argument("-N", "--N", type=int, help="Number of probabilistic streams", default=1)
 
 args = parser.parse_args()
-raw_output = args.raw_output
-verbose = args.verbose if not raw_output else False
 
-network = NetworkGraph(args.network)
-scenario = Scenario(network, args.tt_streams, args.et_streams)
-
+# actual work starts here
 parameters = SchedulingParameters(args)
-
 result = eTSN.solve_scheduling(parameters)
-
 write_result_to_json(result, parameters, args.output)

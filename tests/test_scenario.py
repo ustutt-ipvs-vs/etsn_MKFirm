@@ -24,25 +24,25 @@ class TestScenario(unittest.TestCase):
 
         tt_stream: TTStream
         for tt_stream in scenario.tt_streams:
-            if tt_stream.stream_id == 0:
+            if tt_stream._stream_id == 0:
                 self.assertEqual(tt_stream.source, 3)
                 self.assertEqual(tt_stream.destination, 4)
                 self.assertEqual(tt_stream.cycle_time_ns, 300000)
                 self.assertEqual(tt_stream.frame_size_byte, 100)
                 self.assertEqual(tt_stream.deadline_ns, 300000)
-            elif tt_stream.stream_id == 1:
+            elif tt_stream._stream_id == 1:
                 self.assertEqual(tt_stream.source, 4)
                 self.assertEqual(tt_stream.destination, 2)
                 self.assertEqual(tt_stream.cycle_time_ns, 100000)
                 self.assertEqual(tt_stream.frame_size_byte, 100)
                 self.assertEqual(tt_stream.deadline_ns, 100000)
-            elif tt_stream.stream_id == 8:
+            elif tt_stream._stream_id == 8:
                 self.assertEqual(tt_stream.source, 2)
                 self.assertEqual(tt_stream.destination, 5)
                 self.assertEqual(tt_stream.cycle_time_ns, 400000)
                 self.assertEqual(tt_stream.frame_size_byte, 100)
                 self.assertEqual(tt_stream.deadline_ns, 400000)
-            elif tt_stream.stream_id == 9:
+            elif tt_stream._stream_id == 9:
                 self.assertEqual(tt_stream.source, 5)
                 self.assertEqual(tt_stream.destination, 3)
                 self.assertEqual(tt_stream.cycle_time_ns, 100000)
@@ -51,21 +51,21 @@ class TestScenario(unittest.TestCase):
 
         et_stream: ETStream
         for et_stream in scenario.et_streams:
-            if et_stream.stream_id == 0:
+            if et_stream._stream_id == 0:
                 self.assertEqual(et_stream.ttStreamID, 1)
                 self.assertEqual(et_stream.source, 4)
                 self.assertEqual(et_stream.destination, 2)
                 self.assertEqual(et_stream.frame_size_byte, 100)
                 self.assertEqual(et_stream.min_inter_event_time_ns, 200000)
                 self.assertEqual(len(et_stream.route), 2)
-            elif et_stream.stream_id == 1:
+            elif et_stream._stream_id == 1:
                 self.assertEqual(et_stream.ttStreamID, 2)
                 self.assertEqual(et_stream.source, 3)
                 self.assertEqual(et_stream.destination, 2)
                 self.assertEqual(et_stream.frame_size_byte, 100)
                 self.assertEqual(et_stream.min_inter_event_time_ns, 600000)
                 self.assertEqual(len(et_stream.route), 2)
-            elif et_stream.stream_id == 4:
+            elif et_stream._stream_id == 4:
                 self.assertEqual(et_stream.ttStreamID, 7)
                 self.assertEqual(et_stream.source, 2)
                 self.assertEqual(et_stream.destination, 4)

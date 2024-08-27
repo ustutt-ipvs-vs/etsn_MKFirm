@@ -10,7 +10,7 @@ from docplex.cp.solution import CpoSolveResult
 import Util
 from eTSN.schedulingStructs import SchedulingParameters, CpVariables
 from network.network_elements import EgressPort
-from scenario.structs import Stream
+from scenario.structs import Stream, ETStream
 
 
 def solve_scheduling(parameters: SchedulingParameters) -> CpoSolveResult:
@@ -61,7 +61,6 @@ def create_time_constraints(mdl: CpoModel, variables: CpVariables, param: Schedu
                     mdl.add_constraint(end_before_start(first, second))
 
     # (4) deadline constraint:
-    # Note: the paper uses a e2e delay constraint. We use deadlines in our system model. # TODO check if this is correct
     def define_deadline_constraint(stream: Stream):
         """
         Define the deadline constraint for a stream, i.e., the last transmission opportunity must be within the deadline
@@ -71,7 +70,7 @@ def create_time_constraints(mdl: CpoModel, variables: CpVariables, param: Schedu
         for frame_cycle_number in Util.iterate_frames_per_hc(stream, param.scenario.hyper_cycle):
             last_link = stream.route[-1]
             for transmission_opportunity in variables.F(stream)[frame_cycle_number][last_link.id]:
-                actual_deadline = frame_cycle_number * stream.get_period() + stream.deadline_ns
+                actual_deadline = frame_cycle_number * stream.get_period() + stream.occurrence_time_ns + stream.deadline_ns
                 # the propagation delay is not considered in the paper. We add it for correctness.
                 mdl.add_constraint(
                     end_of(transmission_opportunity) + last_link.propagation_delay_ns <= actual_deadline)
@@ -106,7 +105,12 @@ def create_frame_overlap_constraints(mdl: CpoModel, variables: CpVariables, para
                 mdl.add_constraint(no_overlap(transmission_list))
 
     # An ET transmission must not overlap with any ET transmission from a different ET stream
+    et_stream_a: ETStream
+    et_stream_b: ETStream
     for et_stream_a, et_stream_b in combinations(param.scenario.et_streams, r=2):
+        if et_stream_a.get_pure_stream_id() == et_stream_b.get_pure_stream_id():
+            # a and b are different probabilistic streams of the same ET stream
+            continue
         shared_egress_ports = set(et_stream_a.route).intersection(et_stream_b.route)
         for egress_port in shared_egress_ports:
             transmissions_a = chain(*[variables.F(et_stream_a)[key][egress_port.id] for key in
