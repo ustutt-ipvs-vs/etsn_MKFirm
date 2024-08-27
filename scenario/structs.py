@@ -65,7 +65,7 @@ class ETStream(Stream):
         self.ttStreamID = int(et_stream['ttStreamID'])
         self.min_inter_event_time_ns = int(et_stream['min_inter_event_time_ns'])
         self.json_route = et_stream['route']
-        # TODO we need better value here. Maybe as part of the data generation.
+        # TODO maybe we need a better value here. E.g., as part of the data generation.
         self.deadline_ns = int(self.min_inter_event_time_ns / 2)
 
     def get_period(self):

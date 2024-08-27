@@ -36,6 +36,8 @@ class Scenario:
             for json_stream in json.load(scenario_file):
                 et_stream = ETStream(json_stream)
                 et_stream.route = Routing.get_route_from_json(et_stream, network)
+                # TODO consider adding N et_streams with a modified occurrence time
+                # TODO how to distinguish between the streams, i.e., hash them differently...?
                 self.et_streams.append(et_stream)
 
     def get_et_stream_ids(self):

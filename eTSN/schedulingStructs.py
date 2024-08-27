@@ -48,22 +48,7 @@ class CpVariables:
         self._F_tt = prudent_slot_reservation(parameters.scenario)
 
         # create the et stream variables
-        self._F_et = {}
-        for et_stream in parameters.scenario.et_streams:
-            self._F_et[et_stream.stream_id] = {}
-            for frame_cycle_number in Util.iterate_frames_per_hc(et_stream, parameters.scenario.hyper_cycle):
-                self._F_et[et_stream.stream_id][frame_cycle_number] = {}
-                egress_port: EgressPort
-                for egress_port in et_stream.route:
-                    self._F_et[et_stream.stream_id][frame_cycle_number][egress_port.id] = [expression.interval_var(
-                        start=(
-                            frame_cycle_number * et_stream.min_inter_event_time_ns,
-                            (frame_cycle_number + 1) * et_stream.min_inter_event_time_ns),
-                        end=(
-                            frame_cycle_number * et_stream.min_inter_event_time_ns,
-                            (frame_cycle_number + 1) * et_stream.min_inter_event_time_ns),
-                        length=egress_port.calculate_transmission_delay_in_ns_of(et_stream.frame_size_byte),
-                        name=f"et_stream_{et_stream.stream_id}_frame_{frame_cycle_number}_link_{egress_port.id}")]
+        self._F_et = create_et_transmission_variables(parameters.scenario)
 
     def F(self, stream: Stream):
         if stream.stream_type == StreamType.ET:
@@ -85,13 +70,12 @@ def prudent_slot_reservation(scenario: Scenario) -> Dict[int, Dict[int, Dict[int
             for egress_port in tt_stream.route:
                 T = egress_port.calculate_transmission_delay_in_ns_of(tt_stream.frame_size_byte)
 
+                period_start = frame_cycle_number * tt_stream.cycle_time_ns
+                period_end = period_start + tt_stream.cycle_time_ns
+
                 frames_on_link: List[CpoIntervalVar] = [expression.interval_var(
-                    start=(
-                        frame_cycle_number * tt_stream.cycle_time_ns,
-                        (frame_cycle_number + 1) * tt_stream.cycle_time_ns),
-                    end=(
-                        frame_cycle_number * tt_stream.cycle_time_ns,
-                        (frame_cycle_number + 1) * tt_stream.cycle_time_ns),
+                    start=(period_start, period_end),
+                    end=(period_start, period_end),
                     length=T,
                     name=f"stream_{tt_stream.stream_id}_frame_{frame_cycle_number}_link_{egress_port.id}_#{0}")]
 
@@ -104,12 +88,8 @@ def prudent_slot_reservation(scenario: Scenario) -> Dict[int, Dict[int, Dict[int
                         # reserve the slot for the et stream
                         for i in range(n):  # +1 since we need also one slot for the tt stream
                             frames_on_link.append(expression.interval_var(
-                                start=(
-                                    frame_cycle_number * tt_stream.cycle_time_ns,
-                                    (frame_cycle_number + 1) * tt_stream.cycle_time_ns),
-                                end=(
-                                    frame_cycle_number * tt_stream.cycle_time_ns,
-                                    (frame_cycle_number + 1) * tt_stream.cycle_time_ns),
+                                start=(period_start, period_end),
+                                end=(period_start, period_end),
                                 length=T,
                                 name=f"stream_{tt_stream.stream_id}_frame_{frame_cycle_number}_link_{egress_port.id}_#{len(frames_on_link)}"))
                 frame_cycle_dict[egress_port.id] = frames_on_link
@@ -119,3 +99,25 @@ def prudent_slot_reservation(scenario: Scenario) -> Dict[int, Dict[int, Dict[int
         F[tt_stream.stream_id] = stream_dict
         # end of tt stream loop
     return F
+
+
+def create_et_transmission_variables(scenario: Scenario, N: int = 1) \
+        -> Dict[int, Dict[int, Dict[int, List[CpoIntervalVar]]]]:
+    # TODO implement the usage of N
+    F_et = {}
+    for et_stream in scenario.et_streams:
+        F_et[et_stream.stream_id] = {}
+        for frame_cycle_number in Util.iterate_frames_per_hc(et_stream, scenario.hyper_cycle):
+            F_et[et_stream.stream_id][frame_cycle_number] = {}
+            egress_port: EgressPort
+            for egress_port in et_stream.route:
+                F_et[et_stream.stream_id][frame_cycle_number][egress_port.id] = [expression.interval_var(
+                    start=(
+                        frame_cycle_number * et_stream.min_inter_event_time_ns,
+                        (frame_cycle_number + 1) * et_stream.min_inter_event_time_ns),
+                    end=(
+                        frame_cycle_number * et_stream.min_inter_event_time_ns,
+                        (frame_cycle_number + 1) * et_stream.min_inter_event_time_ns),
+                    length=egress_port.calculate_transmission_delay_in_ns_of(et_stream.frame_size_byte),
+                    name=f"et_stream_{et_stream.stream_id}_frame_{frame_cycle_number}_link_{egress_port.id}_N={0}")]
+    return F_et

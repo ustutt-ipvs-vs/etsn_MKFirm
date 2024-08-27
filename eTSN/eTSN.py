@@ -42,20 +42,8 @@ def create_time_constraints(mdl: CpoModel, variables: CpVariables, param: Schedu
 
     # (1) transmission within period:
     # the non-negative phases part is left out, since the interval variables are already limited to non-negative values
-    def define_transmission_start(stream: Stream):
-        """
-        Define the time constraints for a stream, i.e., the transmission opportunities must be within the deadline
-        :param stream: Stream Object
-        :return:
-        """
-        for frame_cycle_number in Util.iterate_frames_per_hc(stream, param.scenario.hyper_cycle):
-            for egress_port in stream.route:
-                transmission_opportunities = variables.F(stream)[frame_cycle_number][egress_port.id]
-                for transmission_opportunity in transmission_opportunities:
-                    end_of_period = (frame_cycle_number + 1) * stream.get_period()
-                    # it is strange that they limit the tx opportunities to the period here, and later limit the last transmission also with the deadline.
-                    # If the deadline was longer than the period, the period would become the de facto deadline
-                    mdl.add_constraint(end_of(transmission_opportunity) <= end_of_period)
+    # the constraint ensuring the transmission is within the period is also left out, since we already limit the interval
+    # variables accordingly, when creating them.
 
     # (2) first transmission after occurrence time for ET streams: skipped, since we do not have an occurrence time
 
@@ -90,12 +78,10 @@ def create_time_constraints(mdl: CpoModel, variables: CpVariables, param: Schedu
 
     # apply the constraints to the streams
     for tt_stream in param.scenario.tt_streams:
-        define_transmission_start(tt_stream)
         define_transmission_opportunity_precedence(tt_stream)
         define_deadline_constraint(tt_stream)
 
     for et_stream in param.scenario.et_streams:
-        define_transmission_start(et_stream)
         define_transmission_opportunity_precedence(et_stream)
         define_deadline_constraint(et_stream)
 
