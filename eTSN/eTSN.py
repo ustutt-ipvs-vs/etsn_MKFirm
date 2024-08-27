@@ -9,6 +9,7 @@ from docplex.cp.solution import CpoSolveResult
 
 import Util
 from eTSN.schedulingStructs import SchedulingParameters, CpVariables
+from network.network_elements import EgressPort
 from scenario.structs import Stream
 
 
@@ -19,6 +20,8 @@ def solve_scheduling(parameters: SchedulingParameters) -> CpoSolveResult:
     # create constraints (use functions)
     create_time_constraints(mdl, variables, parameters)
     create_frame_overlap_constraints(mdl, variables, parameters)
+    # we skip the priority constraints, since we assume there are no TT streams with prio higher than ET streams
+    create_adjacent_link_constraints(mdl, variables, parameters)
 
     # create the optimization goal (use a function)
 
@@ -127,6 +130,38 @@ def create_frame_overlap_constraints(mdl: CpoModel, variables: CpVariables, para
                   variables.F(et_stream_b).keys()])
             for tx_a, tx_b in product(transmissions_a, transmissions_b):
                 mdl.add_constraint(no_overlap([tx_a, tx_b]))
+
+
+def create_adjacent_link_constraints(mdl: CpoModel, variables: CpVariables, param: SchedulingParameters):
+    """
+    create the adjacent link constraints Section IV.B.4) of the paper
+    :param mdl:
+    :param variables:
+    :param param:
+    :return:
+    """
+
+    # (7) adjacent link constraint:
+    def define_adjacent_link_constraint(stream: Stream):
+        """
+        Define the adjacent link constraint for a stream, i.e., the transmissions must be in order
+        :param stream: Stream Object
+        :return:
+        """
+        for frame_cycle_number in Util.iterate_frames_per_hc(stream, param.scenario.hyper_cycle):
+            hop_i: EgressPort
+            hop_i_plus_1: EgressPort
+            for hop_i, hop_i_plus_1 in pairwise(stream.route):
+                last_transmission_on_i = variables.F(stream)[frame_cycle_number][hop_i.id][-1]
+                first_transmission_on_i_plus_1 = variables.F(stream)[frame_cycle_number][hop_i_plus_1.id][0]
+                mdl.add_constraint(end_before_start(last_transmission_on_i, first_transmission_on_i_plus_1,
+                                                    delay=hop_i.propagation_delay_ns + param.network.get_node(
+                                                        hop_i_plus_1.host_node).processing_delay_ns))
+
+    for tt_stream in param.scenario.tt_streams:
+        define_adjacent_link_constraint(tt_stream)
+    for et_stream in param.scenario.et_streams:
+        define_adjacent_link_constraint(et_stream)
 
 
 def optimization_goal(mdl: CpoModel, variables: CpVariables, param: SchedulingParameters):
