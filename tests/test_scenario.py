@@ -2,7 +2,7 @@ import unittest
 
 from network.network_graph import NetworkGraph
 from scenario.scenario import Scenario
-from scenario.structs import Stream, StreamType, TTStream, ETStream
+from scenario.streamStructs import Stream, StreamType, TTStream, ETStream
 
 
 class TestScenario(unittest.TestCase):

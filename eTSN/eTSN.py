@@ -10,7 +10,7 @@ from docplex.cp.solution import CpoSolveResult
 import Util
 from eTSN.schedulingStructs import SchedulingParameters, CpVariables
 from network.network_elements import EgressPort
-from scenario.structs import Stream, ETStream
+from scenario.streamStructs import Stream, ETStream
 
 
 def solve_scheduling(parameters: SchedulingParameters) -> CpoSolveResult:

@@ -5,7 +5,7 @@ from typing import Set
 
 import Routing
 from network.network_graph import NetworkGraph
-from scenario.structs import *
+from scenario.streamStructs import *
 
 
 @dataclass

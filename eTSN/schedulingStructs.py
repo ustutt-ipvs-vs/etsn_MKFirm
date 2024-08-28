@@ -10,7 +10,7 @@ import Util
 from network.network_elements import EgressPort
 from network.network_graph import NetworkGraph
 from scenario.scenario import Scenario
-from scenario.structs import Stream, StreamType
+from scenario.streamStructs import Stream, StreamType
 
 # stream (with tuple as id), frame_cycle_number, egress_port_id -> List of transmission opportunities
 F_type = Dict[Tuple[int, int], Dict[int, Dict[int, List[CpoIntervalVar]]]]
