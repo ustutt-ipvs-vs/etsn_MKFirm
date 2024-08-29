@@ -2,7 +2,6 @@ import unittest
 
 import Routing
 from network.network_graph import NetworkGraph
-from scenario.scenario import Scenario
 
 
 class TestRouting(unittest.TestCase):

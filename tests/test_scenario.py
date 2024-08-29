@@ -2,15 +2,15 @@ import unittest
 
 from network.network_graph import NetworkGraph
 from scenario.scenario import Scenario
-from scenario.streamStructs import Stream, StreamType, TTStream, ETStream
+from scenario.streamStructs import TTStream, ETStream
 
 
 class TestScenario(unittest.TestCase):
 
     def test_scenario_loading(self):
-        network: NetworkGraph = NetworkGraph("test_data/sample_input/topology.json")
-        scenario: Scenario = Scenario(network, "test_data/sample_input/streams.json",
-                                      "test_data/sample_input/emergency_streams.json")
+        network: NetworkGraph = NetworkGraph("tests/test_data/sample_input/topology.json")
+        scenario: Scenario = Scenario(network, "tests/test_data/sample_input/streams.json",
+                                      "tests/test_data/sample_input/emergency_streams.json")
 
         self.assertEqual(len(scenario.tt_streams), 10)
         self.assertEqual(len(scenario.et_streams), 5)

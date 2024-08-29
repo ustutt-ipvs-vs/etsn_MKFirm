@@ -42,7 +42,7 @@ class Stream(ABC):
         """
         return self._stream_id, 0
 
-    def get_pure_stream_id(self):
+    def get_pure_stream_id(self) -> int:
         """
         Get the stream id without the probabilistic stream number. I.e., the id a user would expect.
         :return:
@@ -64,7 +64,7 @@ class TTStream(Stream):
         self.cycle_time_ns = int(tt_stream['cycle_time_ns'])
         self.deadline_ns = int(tt_stream['deadline_ns'])
 
-    def get_period(self):
+    def get_period(self) -> int:
         return self.cycle_time_ns
 
 
@@ -89,7 +89,7 @@ class ETStream(Stream):
         self.probabilistic_stream_number = probabilistic_stream_number
         self.occurrence_time_ns = int(self.min_inter_event_time_ns * self.probabilistic_stream_number / N)
 
-    def get_period(self):
+    def get_period(self) -> int:
         return self.min_inter_event_time_ns
 
     def get_id(self) -> Tuple[int, int]:

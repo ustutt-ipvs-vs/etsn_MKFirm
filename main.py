@@ -1,10 +1,7 @@
 import argparse
-import os
 from eTSN import eTSN
 from eTSN.output_writer import write_result_to_json
 from eTSN.schedulingStructs import SchedulingParameters
-from network.network_graph import NetworkGraph
-from scenario.scenario import Scenario
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--network", type=str, help="Path to the network graph file", required=True)

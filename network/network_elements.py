@@ -29,7 +29,7 @@ class EgressPort:
     def calculate_transmission_delay_in_ns_of(self, frame_size: int) -> int:
         return int(frame_size * 8 / self.link_speed_mbps * 10 ** 3)
 
-    def get_inter_frame_gap(self):
+    def get_inter_frame_gap(self) -> int:
         return self.inter_frame_gap
 
     def __hash__(self):
