@@ -43,7 +43,7 @@ options:
 ### Example
 
 ```
-main.py -n dummy_data/topology.json -t dummy_data/streams.json -e dummy_data/emergency_streams.json --verbose -o dummy_data/output_gcl.json
+python main.py -n dummy_data/topology.json -t dummy_data/streams.json -e dummy_data/emergency_streams.json --verbose -o dummy_data/output_gcl.json
 
 ```
 
