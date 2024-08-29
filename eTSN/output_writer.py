@@ -9,7 +9,6 @@ from eTSN.schedulingStructs import SchedulingParameters
 
 
 def create_result_structure(e_tsn_result: CpoSolveResult, parameters: SchedulingParameters) -> List[any]:
-    # TODO implement this function
     output = []
     for stream in parameters.scenario.tt_streams:
         stream_output = {
@@ -49,7 +48,7 @@ def create_result_structure(e_tsn_result: CpoSolveResult, parameters: Scheduling
 
 def write_result_to_json(e_tsn_result: CpoSolveResult, parameters: SchedulingParameters, output_file: str):
     # create directory, if needed
-    if '/' in str(output_file) and not os.path.isdir(os.path.basename(output_file)):
+    if '/' in str(output_file) and not os.path.isdir(os.path.dirname(output_file)):
         os.makedirs(os.path.basename(output_file), exist_ok=True)
 
     result_structure = create_result_structure(e_tsn_result, parameters)
