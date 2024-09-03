@@ -23,4 +23,7 @@ args = parser.parse_args()
 # actual work starts here
 parameters = SchedulingParameters(args)
 result = eTSN.solve_scheduling(parameters)
-write_result_to_json(result, parameters, args.output)
+if result.is_solution():
+    write_result_to_json(result, parameters, args.output)
+else:
+    print('No solution found')

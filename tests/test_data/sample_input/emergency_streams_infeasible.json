@@ -1,0 +1,158 @@
+[
+    {
+        "id": 0,
+        "ttStreamID": 1,
+        "name": "emergency_stream_0",
+        "source": 4,
+        "target": 2,
+        "rate_mbps": 5e-03,
+        "bucket_size_byte": 100,
+        "frame_size_byte": 100,
+        "survival_time_ns": 300000,
+        "min_inter_event_time_ns": 10000,
+        "route": [
+            {
+                "id": 7,
+                "name": "4-0",
+                "from": 4,
+                "to": 0
+            },
+            {
+                "id": 2,
+                "name": "0-2",
+                "from": 0,
+                "to": 2
+            }
+        ]
+    },
+    {
+        "id": 1,
+        "ttStreamID": 2,
+        "name": "emergency_stream_1",
+        "source": 3,
+        "target": 2,
+        "rate_mbps": 5e-03,
+        "bucket_size_byte": 100,
+        "frame_size_byte": 100,
+        "survival_time_ns": 300000,
+        "min_inter_event_time_ns": 10000,
+        "route": [
+            {
+                "id": 5,
+                "name": "3-0",
+                "from": 3,
+                "to": 0
+            },
+            {
+                "id": 2,
+                "name": "0-2",
+                "from": 0,
+                "to": 2
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "ttStreamID": 3,
+        "name": "emergency_stream_2",
+        "source": 2,
+        "target": 1,
+        "rate_mbps": 1.6666666666666668e-03,
+        "bucket_size_byte": 100,
+        "frame_size_byte": 100,
+        "survival_time_ns": 900000,
+        "min_inter_event_time_ns": 70000,
+        "route": [
+            {
+                "id": 3,
+                "name": "2-0",
+                "from": 2,
+                "to": 0
+            },
+            {
+                "id": 0,
+                "name": "0-1",
+                "from": 0,
+                "to": 1
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "ttStreamID": 9,
+        "name": "emergency_stream_3",
+        "source": 5,
+        "target": 3,
+        "rate_mbps": 5e-03,
+        "bucket_size_byte": 100,
+        "frame_size_byte": 100,
+        "survival_time_ns": 300000,
+        "min_inter_event_time_ns": 10000,
+        "route": [
+            {
+                "id": 9,
+                "name": "5-0",
+                "from": 5,
+                "to": 0
+            },
+            {
+                "id": 4,
+                "name": "0-3",
+                "from": 0,
+                "to": 3
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "ttStreamID": 7,
+        "name": "emergency_stream_4",
+        "source": 2,
+        "target": 4,
+        "rate_mbps": 5e-05,
+        "bucket_size_byte": 100,
+        "frame_size_byte": 100,
+        "survival_time_ns": 300000,
+        "min_inter_event_time_ns": 10000,
+        "route": [
+            {
+                "id": 3,
+                "name": "2-0",
+                "from": 2,
+                "to": 0
+            },
+            {
+                "id": 6,
+                "name": "0-4",
+                "from": 0,
+                "to": 4
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "ttStreamID": 9,
+        "name": "emergency_stream_5",
+        "source": 5,
+        "target": 3,
+        "rate_mbps": 5e-03,
+        "bucket_size_byte": 100,
+        "frame_size_byte": 100,
+        "survival_time_ns": 300000,
+        "min_inter_event_time_ns": 10000,
+        "route": [
+            {
+                "id": 9,
+                "name": "5-0",
+                "from": 5,
+                "to": 0
+            },
+            {
+                "id": 4,
+                "name": "0-3",
+                "from": 0,
+                "to": 3
+            }
+        ]
+    }
+]
