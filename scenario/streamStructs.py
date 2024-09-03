@@ -61,8 +61,9 @@ class TTStream(Stream):
 
     def __init__(self, tt_stream):
         super().__init__(tt_stream)
-        self.cycle_time_ns = int(tt_stream['cycle_time_ns'])
-        self.deadline_ns = int(tt_stream['deadline_ns'])
+        if tt_stream is not None:
+            self.cycle_time_ns = int(tt_stream['cycle_time_ns'])
+            self.deadline_ns = int(tt_stream['deadline_ns'])
 
     def get_period(self) -> int:
         return self.cycle_time_ns
@@ -80,14 +81,15 @@ class ETStream(Stream):
 
     def __init__(self, et_stream, probabilistic_stream_number: int = 0, N: int = 1):
         super().__init__(et_stream)
-        self.ttStreamID = int(et_stream['ttStreamID'])
-        self.min_inter_event_time_ns = int(et_stream['min_inter_event_time_ns'])
-        self.json_route = et_stream['route']
-        # TODO maybe we need a better value here. E.g., as part of the data generation.
-        self.deadline_ns = int(self.min_inter_event_time_ns / 2)
+        if et_stream is not None:
+            self.ttStreamID = int(et_stream['ttStreamID'])
+            self.min_inter_event_time_ns = int(et_stream['min_inter_event_time_ns'])
+            self.json_route = et_stream['route']
+            # TODO maybe we need a better value here. E.g., as part of the data generation.
+            self.deadline_ns = int(self.min_inter_event_time_ns / 2)
 
-        self.probabilistic_stream_number = probabilistic_stream_number
-        self.occurrence_time_ns = int(self.min_inter_event_time_ns * self.probabilistic_stream_number / N)
+            self.probabilistic_stream_number = probabilistic_stream_number
+            self.occurrence_time_ns = int(self.min_inter_event_time_ns * self.probabilistic_stream_number / N)
 
     def get_period(self) -> int:
         return self.min_inter_event_time_ns
