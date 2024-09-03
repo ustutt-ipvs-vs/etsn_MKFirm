@@ -17,8 +17,8 @@ class TestScenario(unittest.TestCase):
                                       "tests/test_data/sample_input/emergency_streams.json")
         output_path: str = 'tests/test_data/sample_input/test_transmission_output.json'
         
-        args = Namespace(network='dummy_data/topology.json', tt_streams='dummy_data/streams.json', et_streams='dummy_data/emergency_streams.json', 
-                         verbose=False, raw_output=False, output='dummy_data/output_gcl.json', cplex=None, threads=4, timelimit=120, N=1)
+        args = Namespace(network='tests/test_data/sample_input/topology.json', tt_streams='tests/test_data/sample_input/streams.json', 
+                         et_streams='tests/test_data/sample_input/emergency_streams.json', verbose=False, raw_output=False, output=output_path, cplex=None, threads=4, timelimit=120, N=1)
         parameters = SchedulingParameters(args)
         result = eTSN.solve_scheduling(parameters)
         write_result_to_json(result, parameters, output_path)
