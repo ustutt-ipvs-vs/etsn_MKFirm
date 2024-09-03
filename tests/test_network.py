@@ -3,6 +3,7 @@ import unittest
 from network.network_elements import EgressPort
 from network.network_graph import NetworkGraph
 from scenario.scenario import Stream
+from scenario.streamStructs import ETStream, TTStream
 
 
 class TestNetwork(unittest.TestCase):
@@ -23,7 +24,7 @@ class TestNetwork(unittest.TestCase):
                 self.assertEqual(port.propagation_delay_ns, 50)
 
     def test_network_loading(self):
-        network: NetworkGraph = NetworkGraph("test_data/routing_graph_1.json")
+        network: NetworkGraph = NetworkGraph("tests/test_data/routing_graph_1.json")
 
         self.assertEqual(len(network.nodes), 11)
         self.assertEqual(network.get_node_ids(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
@@ -63,13 +64,13 @@ class TestNetwork(unittest.TestCase):
         e3.link_speed_mbps = 0
         self.assertRaises(ZeroDivisionError, e3.calculate_transmission_delay_in_ns_of, 12)
 
-        s1: Stream = Stream(None)
+        s1: Stream = TTStream(None)
         s1.frame_size_byte = 250
         self.assertEqual(e1.calculate_transmission_delay_in_ns_of(s1.frame_size_byte), 2000)
         self.assertEqual(e2.calculate_transmission_delay_in_ns_of(s1.frame_size_byte), 20000)
         self.assertRaises(ZeroDivisionError, e3.calculate_transmission_delay_in_ns_of, s1.frame_size_byte)
 
-        s2: Stream = Stream(None)
+        s2: Stream = ETStream(None)
         s2.frame_size_byte = 1500
         self.assertEqual(e1.calculate_transmission_delay_in_ns_of(s2.frame_size_byte), 12000)
         self.assertEqual(e2.calculate_transmission_delay_in_ns_of(s2.frame_size_byte), 120000)
