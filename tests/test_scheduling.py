@@ -1,0 +1,29 @@
+from argparse import Namespace
+import unittest
+import json
+
+from Util import get_frames_per_hc
+from eTSN import eTSN
+from eTSN.output_writer import write_result_to_json
+from eTSN.schedulingStructs import SchedulingParameters
+from network.network_graph import NetworkGraph
+from scenario.scenario import Scenario
+
+class TestScenario(unittest.TestCase):
+
+    def test_scenario_loading(self):
+        network: NetworkGraph = NetworkGraph("tests/test_data/sample_input/topology.json")
+        scenario: Scenario = Scenario(network, "tests/test_data/sample_input/streams.json",
+                                      "tests/test_data/sample_input/emergency_streams.json")
+        output_path: str = 'tests/test_data/sample_input/test_transmission_output.json'
+        
+        args = Namespace(network='dummy_data/topology.json', tt_streams='dummy_data/streams.json', et_streams='dummy_data/emergency_streams.json', 
+                         verbose=False, raw_output=False, output='dummy_data/output_gcl.json', cplex=None, threads=4, timelimit=120, N=1)
+        parameters = SchedulingParameters(args)
+        result = eTSN.solve_scheduling(parameters)
+        write_result_to_json(result, parameters, output_path)
+       
+        with open(output_path) as result_file:
+            result_json = json.load(result_file)
+            # stream count
+            self.assertEqual(len(result_json), len(scenario.get_tt_stream_ids()))
