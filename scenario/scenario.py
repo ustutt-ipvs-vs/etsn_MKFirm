@@ -14,7 +14,7 @@ class Scenario:
     et_streams: List[ETStream]
     hyper_cycle: int
 
-    def __init__(self, network: NetworkGraph, tt_streams_path: str, et_streams_path: str, N: int):
+    def __init__(self, network: NetworkGraph, tt_streams_path: str, et_streams_path: str, N: int = 1):
         self.tt_streams = []
         with open(tt_streams_path) as scenario_file:
             periods: Set[int] = set()

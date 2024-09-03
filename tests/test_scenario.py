@@ -14,9 +14,9 @@ class TestScenario(unittest.TestCase):
 
         self.assertEqual(len(scenario.tt_streams), 10)
         self.assertEqual(len(scenario.et_streams), 5)
-        tt_stream_ids = [x for x in range(10)]
+        tt_stream_ids = [(x,0) for x in range(10)]
         self.assertEqual(scenario.get_tt_stream_ids(), tt_stream_ids)
-        et_stream_ids = [x for x in range(5)]
+        et_stream_ids = [(x,0) for x in range(5)]
         self.assertEqual(scenario.get_et_stream_ids(), et_stream_ids)
         self.assertEqual(scenario.get_stream_ids(), tt_stream_ids + et_stream_ids)
 
