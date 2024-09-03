@@ -1,7 +1,7 @@
 import json
 import math
 from dataclasses import dataclass
-from typing import Set
+from typing import Set, List
 
 import Routing
 from network.network_graph import NetworkGraph
@@ -39,11 +39,11 @@ class Scenario:
                     et_stream.route = Routing.get_route_from_json(et_stream, network)
                     self.et_streams.append(et_stream)
 
-    def get_et_stream_ids(self):
+    def get_et_stream_ids(self) -> List[Tuple[int, int]]:
         return [stream.get_id() for stream in self.et_streams]
 
-    def get_tt_stream_ids(self):
+    def get_tt_stream_ids(self) -> List[Tuple[int, int]]:
         return [stream.get_id() for stream in self.tt_streams]
 
-    def get_stream_ids(self):
+    def get_stream_ids(self) -> List[Tuple[int, int]]:
         return self.get_tt_stream_ids() + self.get_et_stream_ids()

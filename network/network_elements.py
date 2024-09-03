@@ -47,7 +47,7 @@ class NetworkNode:
     def __init__(self, name):
         self.id = name
 
-    def get_neighbors(self):
+    def get_neighbors(self) -> List[int]:
         return [port.destination_node for port in self.ports]
 
     def get_egress_port(self, egress_port_id: int):
