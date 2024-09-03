@@ -7,7 +7,7 @@ from network.network_graph import NetworkGraph
 class TestRouting(unittest.TestCase):
 
     def test_simple_routing(self):
-        network = NetworkGraph("test_data/routing_graph_1.json")
+        network = NetworkGraph("tests/test_data/routing_graph_1.json")
 
         # 0 -> 9
         route = Routing.get_dijkstra_shortest_path(0, 9, network, 1000)
@@ -26,7 +26,7 @@ class TestRouting(unittest.TestCase):
         self.assertEqual(len(route), 3)
 
     def test_no_path(self):
-        network = NetworkGraph("test_data/routing_graph_2.json")
+        network = NetworkGraph("tests/test_data/routing_graph_2.json")
         existing_route = Routing.get_dijkstra_shortest_path(0, 1, network, 1000)
         self.assertEqual(len(existing_route), 1)
 
