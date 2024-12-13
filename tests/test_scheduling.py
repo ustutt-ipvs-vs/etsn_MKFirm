@@ -2,12 +2,10 @@ from argparse import Namespace
 import unittest
 import json
 
-from Util import get_frames_per_hc
 from eTSN import eTSN
 from eTSN.output_writer import write_result_to_json
 from eTSN.schedulingStructs import SchedulingParameters
-from network.network_graph import NetworkGraph
-from scenario.scenario import Scenario
+
 
 class TestScenario(unittest.TestCase):
 
@@ -27,7 +25,7 @@ class TestScenario(unittest.TestCase):
     def test_scheduling_infeasible(self):
         output_path: str = 'tests/test_data/sample_input/test_transmission_output.json'
         args = Namespace(network='tests/test_data/sample_input/topology.json', tt_streams='tests/test_data/sample_input/streams.json', 
-                         et_streams='tests/test_data/sample_input/emergency_streams_infeasible.json', verbose=False, raw_output=False, output=output_path, cplex=None, threads=4, timelimit=120, N=5)
+                         et_streams='tests/test_data/sample_input/emergency_streams_infeasible.json', verbose=False, raw_output=False, output=output_path, cplex=None, threads=4, timelimit=120, N=1)
         parameters = SchedulingParameters(args)
         result = eTSN.solve_scheduling(parameters)
         
