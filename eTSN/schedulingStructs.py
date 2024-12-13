@@ -69,7 +69,8 @@ def prudent_slot_reservation(scenario: Scenario) -> F_type:
             frame_cycle_dict = {}
 
             for egress_port in tt_stream.route:
-                T = egress_port.calculate_transmission_delay_in_ns_of(tt_stream.frame_size_byte)
+                T = egress_port.calculate_transmission_delay_in_ns_of(
+                    tt_stream.frame_size_byte) + egress_port.get_inter_frame_gap()
 
                 period_start = frame_cycle_number * tt_stream.cycle_time_ns
                 period_end = period_start + tt_stream.cycle_time_ns
@@ -121,6 +122,6 @@ def create_et_transmission_variables(scenario: Scenario) -> F_type:
                 F_et[et_stream.get_id()][frame_cycle_number][egress_port.id] = [expression.interval_var(
                     start=(release_time, period_end),
                     end=(release_time, period_end),
-                    length=egress_port.calculate_transmission_delay_in_ns_of(et_stream.frame_size_byte),
+                    length=egress_port.calculate_transmission_delay_in_ns_of(et_stream.frame_size_byte) + egress_port.get_inter_frame_gap(),
                     name=f"et_stream_{et_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_N={et_stream.probabilistic_stream_number}")]
     return F_et
