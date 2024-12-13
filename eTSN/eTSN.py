@@ -1,16 +1,15 @@
-import time
 from itertools import pairwise, combinations, product, chain
 from typing import List
 
 from docplex.cp.expression import CpoIntervalVar
 from docplex.cp.model import CpoModel
-from docplex.cp.modeler import end_before_start, end_of, no_overlap
+from docplex.cp.modeler import *
 from docplex.cp.solution import CpoSolveResult
 
 import Util
 from eTSN.schedulingStructs import SchedulingParameters, CpVariables
 from network.network_elements import EgressPort
-from scenario.streamStructs import Stream, ETStream
+from scenario.streamStructs import Stream, ETStream, StreamType
 
 
 def solve_scheduling(parameters: SchedulingParameters) -> CpoSolveResult:
@@ -22,6 +21,7 @@ def solve_scheduling(parameters: SchedulingParameters) -> CpoSolveResult:
     create_frame_overlap_constraints(mdl, variables, parameters)
     # we skip the priority constraints, since we assume there are no TT streams with prio higher than ET streams
     create_adjacent_link_constraints(mdl, variables, parameters)
+    create_frame_isolation_constraints(mdl, variables, parameters)
 
     # create the optimization goal (use a function)
 
@@ -57,8 +57,8 @@ def create_time_constraints(mdl: CpoModel, variables: CpVariables, param: Schedu
         for frame_cycle_number in Util.iterate_frames_per_hc(stream, param.scenario.hyper_cycle):
             for egress_port in stream.route:
                 transmission_opportunities = variables.F(stream)[frame_cycle_number][egress_port.id]
-                for first, second in pairwise(transmission_opportunities):
-                    mdl.add_constraint(end_before_start(first, second))
+                for first_tx, second_tx in pairwise(transmission_opportunities):
+                    mdl.add_constraint(end_before_start(first_tx, second_tx))
 
     # (4) deadline constraint:
     def define_deadline_constraint(stream: Stream):
@@ -152,6 +152,97 @@ def create_adjacent_link_constraints(mdl: CpoModel, variables: CpVariables, para
         define_adjacent_link_constraint(tt_stream)
     for et_stream in param.scenario.et_streams:
         define_adjacent_link_constraint(et_stream)
+
+
+def create_frame_isolation_constraints(mdl: CpoModel, variables: CpVariables, param: SchedulingParameters):
+    """
+    create the frame isolation constraints, barely mentioned in the paper in Section IV.B.3)
+    :param mdl:
+    :param variables:
+    :param param:
+    :return:
+    """
+
+    def define_interval_borders(stream: Stream):
+        # also works as a precedence constraint in a way.
+        for frame_cycle_number in Util.iterate_frames_per_hc(stream, param.scenario.hyper_cycle):
+            previous_egress_port: EgressPort | None = None
+            for egress_port in stream.route:
+                queuing_var = variables.Q(stream.stream_type)[egress_port.id][stream.get_id()][frame_cycle_number]
+                transmission_list = variables.F(stream)[frame_cycle_number][egress_port.id]
+                # queuing starts at the arrival of the first transmission slot at the current link
+                if previous_egress_port is None:
+                    # first hop, just start the queuing at the start of the first transmission slot
+                    mdl.add_constraint(start_at_start(queuing_var, transmission_list[0]))
+                else:
+                    # consecutive hop, queuing starts at the end of the previous transmission slot + delays
+                    mdl.add_constraint(
+                        end_at_start(variables.F(stream)[frame_cycle_number][previous_egress_port.id][-1],
+                                     queuing_var,
+                                     delay=previous_egress_port.propagation_delay_ns + param.network.get_node(
+                                         egress_port.host_node).processing_delay_ns))
+
+                # queuing ends at the end of the latest transmission slot
+                mdl.add_constraint(end_at_end(queuing_var, transmission_list[-1]))
+                previous_egress_port = egress_port
+
+    def define_no_overlap_constraints_tt():
+        for egress_port_dict in variables.Q(StreamType.TT).values():
+            '''
+            for every link
+                for every stream combination
+                    for every cycle combination
+                        filter all combinations where the start/end values are definitely in a different period
+                        add a no_overlap constraint IF the pcp value is the same
+            '''
+            for stream_a, stream_b in combinations(egress_port_dict.keys(), r=2):
+                for cycle_a, cycle_b in product(egress_port_dict[stream_a].keys(), egress_port_dict[stream_b].keys()):
+                    interval_a = egress_port_dict[stream_a][cycle_a]
+                    interval_b = egress_port_dict[stream_b][cycle_b]
+                    if interval_a.get_end()[1] <= interval_b.get_start()[0] or interval_a.get_start()[0] >= \
+                            interval_b.get_end()[1]:
+                        continue
+                    mdl.add_constraint(if_then(
+                        variables.tt_pcp[stream_a[0]] == variables.tt_pcp[stream_b[0]],
+                        # no_overlap does not return a bool, so we need to check manually
+                        logical_or(end_of(interval_a) <= start_of(interval_b),
+                                   end_of(interval_b) <= start_of(interval_a))
+                    ))
+
+    def define_no_overlap_constraints_et():
+        for egress_port_dict in variables.Q(StreamType.ET).values():
+            '''
+            for every link
+                for every stream combination
+                    for every cycle combination
+                        filter all combinations where the stream id is the same (probabilistic streams of the same stream)
+                        add a no_overlap constraint
+            '''
+            for stream_a, stream_b in combinations(egress_port_dict.keys(), r=2):
+                if stream_a[0] == stream_b[0]:
+                    continue
+                for cycle_a, cycle_b in product(egress_port_dict[stream_a].keys(), egress_port_dict[stream_b].keys()):
+                    interval_a = egress_port_dict[stream_a][cycle_a]
+                    interval_b = egress_port_dict[stream_b][cycle_b]
+                    if interval_a.get_end()[1] <= interval_b.get_start()[0] or interval_a.get_start()[0] >= \
+                            interval_b.get_end()[1]:
+                        continue
+                    mdl.add_constraint(no_overlap([interval_a, interval_b]))
+
+    def ensure_pcp_is_set():
+        for stream in param.scenario.tt_streams:
+            # this enforces each pcp variable to be set (and to be part of the solution)
+            mdl.add_constraint(variables.tt_pcp[stream.get_pure_stream_id()] >= 0)
+
+    # ensure correct interval borders
+    for tt_stream in param.scenario.tt_streams:
+        define_interval_borders(tt_stream)
+    for et_stream in param.scenario.et_streams:
+        define_interval_borders(et_stream)
+
+    define_no_overlap_constraints_tt()
+    define_no_overlap_constraints_et()
+    ensure_pcp_is_set()
 
 
 def optimization_goal(mdl: CpoModel, variables: CpVariables, param: SchedulingParameters):

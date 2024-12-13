@@ -11,9 +11,10 @@ from eTSN.schedulingStructs import SchedulingParameters
 def create_result_structure(e_tsn_result: CpoSolveResult, parameters: SchedulingParameters) -> List[any]:
     output = []
     for stream in parameters.scenario.tt_streams:
+        pcp_variable_name = f"pcp_tt_{stream.get_pure_stream_id()}"
         stream_output = {
             "stream_id": stream.get_pure_stream_id(),
-            "pcp": 1  # TODO update if we add frame isolation constraints
+            "pcp": e_tsn_result[pcp_variable_name]
         }
         frames = []
         for frame_cycle_number in Util.iterate_frames_per_hc(stream, parameters.scenario.hyper_cycle):
