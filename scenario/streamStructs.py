@@ -72,17 +72,18 @@ class TTStream(Stream):
 @dataclass
 class ETStream(Stream):
     stream_type = StreamType.ET
-    ttStreamID: int
+    associated_ttStreamID: int
     min_inter_event_time_ns: int
 
     json_route: List[any]
     probabilistic_stream_number: int
     occurrence_time_ns: int
+    deadline_ns: int
 
     def __init__(self, et_stream, probabilistic_stream_number: int = 0, N: int = 1):
         super().__init__(et_stream)
         if et_stream is not None:
-            self.ttStreamID = int(et_stream['ttStreamID'])
+            self.associated_ttStreamID = int(et_stream['ttStreamID'])
             self.min_inter_event_time_ns = int(et_stream['min_inter_event_time_ns'])
             self.json_route = et_stream['route']
             # TODO maybe we need a better value here. E.g., as part of the data generation.

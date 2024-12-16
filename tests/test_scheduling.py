@@ -20,7 +20,7 @@ class TestScenario(unittest.TestCase):
         with open(output_path) as result_file:
             result_json = json.load(result_file)
             # stream count
-            self.assertEqual(len(result_json), len(parameters.scenario.get_tt_stream_ids()))
+            self.assertEqual(len(result_json), len(parameters.scenario.tt_streams) + len(parameters.scenario.et_streams))
             
     def test_scheduling_infeasible(self):
         output_path: str = 'tests/test_data/sample_input/test_transmission_output.json'

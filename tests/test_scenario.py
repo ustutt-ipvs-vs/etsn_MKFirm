@@ -52,21 +52,21 @@ class TestScenario(unittest.TestCase):
         et_stream: ETStream
         for et_stream in scenario.et_streams:
             if et_stream._stream_id == 0:
-                self.assertEqual(et_stream.ttStreamID, 1)
+                self.assertEqual(et_stream.associated_ttStreamID, 1)
                 self.assertEqual(et_stream.source, 4)
                 self.assertEqual(et_stream.destination, 2)
                 self.assertEqual(et_stream.frame_size_byte, 100)
                 self.assertEqual(et_stream.min_inter_event_time_ns, 200000)
                 self.assertEqual(len(et_stream.route), 2)
             elif et_stream._stream_id == 1:
-                self.assertEqual(et_stream.ttStreamID, 2)
+                self.assertEqual(et_stream.associated_ttStreamID, 2)
                 self.assertEqual(et_stream.source, 3)
                 self.assertEqual(et_stream.destination, 2)
                 self.assertEqual(et_stream.frame_size_byte, 100)
                 self.assertEqual(et_stream.min_inter_event_time_ns, 600000)
                 self.assertEqual(len(et_stream.route), 2)
             elif et_stream._stream_id == 4:
-                self.assertEqual(et_stream.ttStreamID, 7)
+                self.assertEqual(et_stream.associated_ttStreamID, 7)
                 self.assertEqual(et_stream.source, 2)
                 self.assertEqual(et_stream.destination, 4)
                 self.assertEqual(et_stream.frame_size_byte, 100)
