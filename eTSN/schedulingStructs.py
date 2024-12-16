@@ -119,14 +119,16 @@ class CpVariables:
                                     start=(period_start, period_end),
                                     end=(period_start, period_end),
                                     length=T,
-                                    name=f"stream_{tt_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_#{len(frames_on_link)}"))
+                                    name=f"stream_{tt_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_#{len(frames_on_link)}",
+                                    optional=False))
                     self._F_tt[tt_stream.get_id()][frame_cycle_number][egress_port.id] = frames_on_link
 
                     self._Q_tt.setdefault(egress_port.id, {}).setdefault(tt_stream.get_id(), {})[
                         frame_cycle_number] = expression.interval_var(
                         start=(period_start, period_end),
                         end=(period_start, period_end),
-                        name=f"queuing_tt_stream_{tt_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}")
+                        name=f"queuing_tt_stream_{tt_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}",
+                        optional=False)
                     # end of route loop
                 # end of frame loop
             # end of tt stream loop
@@ -150,13 +152,15 @@ class CpVariables:
                         end=(release_time, period_end),
                         length=egress_port.calculate_transmission_delay_in_ns_of(
                             et_stream.frame_size_byte) + egress_port.get_inter_frame_gap(),
-                        name=f"et_stream_{et_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_N={et_stream.probabilistic_stream_number}")]
+                        name=f"et_stream_{et_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_N={et_stream.probabilistic_stream_number}",
+                        optional=False)]
                     # queuing variable (to ensure frame isolation)
                     self._Q_et.setdefault(egress_port.id, {}).setdefault(et_stream.get_id(), {})[
                         frame_cycle_number] = expression.interval_var(
                         start=(release_time, period_end),
                         end=(release_time, period_end),
-                        name=f"queuing_et_stream_{et_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_N={et_stream.probabilistic_stream_number}"
+                        name=f"queuing_et_stream_{et_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_N={et_stream.probabilistic_stream_number}",
+                        optional=False
                     )
 
     def create_pcp_variables(self, scenario: Scenario):
@@ -164,4 +168,4 @@ class CpVariables:
 
         for tt_stream in scenario.tt_streams:
             self.tt_pcp[tt_stream.get_pure_stream_id()] = expression.integer_var(0, 6,
-                                                                                  f"pcp_tt_{tt_stream.get_pure_stream_id()}")
+                                                                                 f"pcp_tt_{tt_stream.get_pure_stream_id()}")
