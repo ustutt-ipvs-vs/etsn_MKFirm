@@ -6,7 +6,7 @@ from docplex.cp.solution import CpoSolveResult
 
 import Util
 from eTSN.schedulingStructs import SchedulingParameters
-from scenario.streamStructs import Stream, StreamType
+from scenario.streamStructs import Stream, StreamType, ETStream
 
 
 def create_result_structure(e_tsn_result: CpoSolveResult, parameters: SchedulingParameters) -> List[any]:
@@ -39,6 +39,9 @@ def create_result_structure(e_tsn_result: CpoSolveResult, parameters: Scheduling
             for egress_port in current_stream.route:
                 transmission_slot_number = 0
                 variable_name = f"stream_{current_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_#{transmission_slot_number}"
+                if stream.stream_type == StreamType.ET:
+                    current_stream: ETStream
+                    variable_name = f"et_stream_{current_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_N={current_stream.probabilistic_stream_number}"
 
                 while variable_name in scheduling_result.solution:
                     transmission_var = scheduling_result[variable_name]
@@ -51,7 +54,10 @@ def create_result_structure(e_tsn_result: CpoSolveResult, parameters: Scheduling
                         "end": transmission_var.end
                     })
                     transmission_slot_number += 1
-                    variable_name = f"stream_{current_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_#{transmission_slot_number}"
+                    if current_stream.stream_type == StreamType.TT:
+                        variable_name = f"stream_{current_stream.get_pure_stream_id()}_frame_{frame_cycle_number}_link_{egress_port.id}_#{transmission_slot_number}"
+                    else:
+                        variable_name = "dummy entry to exit loop"
             frame_output["transmissions"] = transmissions
             frames.append(frame_output)
         stream_output["frames"] = frames
