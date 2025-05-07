@@ -176,8 +176,9 @@ def create_frame_isolation_constraints(mdl: CpoModel, variables: CpVariables, pa
                     mdl.add_constraint(start_at_start(queuing_var, transmission_list[0]))
                 else:
                     # consecutive hop, queuing starts at the end of the previous transmission slot + delays
+                    # Note: use the first transmission slot [0], since it is the earliest opportunity
                     mdl.add_constraint(
-                        end_at_start(variables.F(stream)[frame_cycle_number][previous_egress_port.id][-1],
+                        end_at_start(variables.F(stream)[frame_cycle_number][previous_egress_port.id][0],
                                      queuing_var,
                                      delay=previous_egress_port.propagation_delay_ns + param.network.get_node(
                                          egress_port.host_node).processing_delay_ns))
@@ -201,12 +202,43 @@ def create_frame_isolation_constraints(mdl: CpoModel, variables: CpVariables, pa
                     interval_b = egress_port_dict[stream_b][cycle_b]
                     if interval_a.get_end()[1] <= interval_b.get_start()[0] or interval_a.get_start()[0] >= \
                             interval_b.get_end()[1]:
+                        # start and end are intervals, hence we need 0 to get the start of the interval and 1 # to get the end of the interval
                         continue
+                    '''
+                    3 cases:
+                    1) pcp_a == pcp_b
+                        -> no overlap
+                    2) pcp_a < pcp_b
+                        -> no overlap if start_a <= start_b
+                    3) pcp_a > pcp_b
+                        -> no overlap if start_b <= start_a
+                        
+                    2 and 3 ensure that a stream with a higher pcp value cannot overtake the earlier stream. 
+                    '''
                     mdl.add_constraint(if_then(
                         variables.tt_pcp[stream_a[0]] == variables.tt_pcp[stream_b[0]],
                         # no_overlap does not return a bool, so we need to check manually
                         logical_or(end_of(interval_a) <= start_of(interval_b),
                                    end_of(interval_b) <= start_of(interval_a))
+                        # could be less strict, if we get the start of the last transmission slot. However, not part of eTSN
+                    ))
+                    mdl.add_constraint(if_then(
+                        logical_and(
+                            variables.tt_pcp[stream_a[0]] < variables.tt_pcp[stream_b[0]],
+                            start_of(interval_a) <= start_of(interval_b)
+                        ),
+                        # no_overlap does not return a bool, so we need to check manually
+                        end_of(interval_a) <= start_of(interval_b)
+                        # could be less strict, if we get the start of the last transmission slot. However, not part of eTSN
+                    ))
+                    mdl.add_constraint(if_then(
+                        logical_and(
+                            variables.tt_pcp[stream_b[0]] < variables.tt_pcp[stream_a[0]],
+                            start_of(interval_b) <= start_of(interval_a)
+                        ),
+                        # no_overlap does not return a bool, so we need to check manually
+                        end_of(interval_b) <= start_of(interval_a)
+                        # could be less strict, if we get the start of the last transmission slot. However, not part of eTSN
                     ))
 
     def define_no_overlap_constraints_et():

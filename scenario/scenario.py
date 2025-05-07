@@ -1,7 +1,6 @@
 import json
 import math
-from dataclasses import dataclass
-from typing import Set, List
+from typing import Set
 
 import Routing
 from network.network_graph import NetworkGraph

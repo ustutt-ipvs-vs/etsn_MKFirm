@@ -81,6 +81,9 @@ class CpVariables:
         else:
             return self._F_tt[stream.get_id()]
 
+    def F_tt_id(self, stream_id_tuple: Tuple[int, int]):
+        return self._F_tt[stream_id_tuple]
+
     def prudent_slot_reservation(self, scenario: Scenario):
         # stream, frame_cycle_number, egress_port_id -> List of transmission opportunities
         self._F_tt: F_type = {}
