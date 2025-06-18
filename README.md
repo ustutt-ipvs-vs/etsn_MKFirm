@@ -22,8 +22,9 @@ and the paper this implementation contributes to:
 
 ## Requirements
 
-* Python (3.10 or later)
-* docplex (2.25.236 or later)
+* Python (tested with 3.10)
+* docplex (tested with 2.25.236)
+* CPLEX (tested with 22.1)
 
 ## Usage
 
