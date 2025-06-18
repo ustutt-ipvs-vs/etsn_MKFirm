@@ -1,16 +1,29 @@
 # E-TSN
 
-Implementation of the E-TSN scheduling algorithm.
+Implementation of the E-TSN scheduling algorithm. Please note the limitations below.
 
-Y. Zhao et al., "E-TSN: Enabling Event-triggered Critical Traffic in Time-Sensitive Networking for Industrial Applications," 2022 IEEE 42nd International Conference on Distributed Computing Systems (ICDCS), Bologna, Italy, 2022, pp. 691-701, doi: 10.1109/ICDCS54860.2022.00072.
+When using this code, please cite the original paper:
 
+```
+@InProceedings{Zhao2022,
+  author    = {Zhao, Yi and Yang, Zheng and He, Xiaowu and Wu, Jiahang and Cao, Hao and Dong, Liang and Dang, Fan and Liu, Yunhao},
+  booktitle = {2022 IEEE 42nd International Conference on Distributed Computing Systems (ICDCS)},
+  title     = {E-TSN: Enabling Event-triggered Critical Traffic in Time-Sensitive Networking for Industrial Applications},
+  doi       = {10.1109/ICDCS54860.2022.00072},
+  pages     = {691-701},
+  keywords  = {Industries;Schedules;Job shop scheduling;Jitter;Probabilistic logic;Fourth Industrial Revolution;Internet;Time-Sensitive Networking;Event-triggered critical traffic;Traffic Scheduling;Cyber physical system},
+  year      = {2022},
+}
+```
 
+and the paper this implementation contributes to:
+
+**TODO add reference to our paper**
 
 ## Requirements
 
 * Python (3.10 or later)
 * docplex (2.25.236 or later)
-* 
 
 ## Usage
 
@@ -47,7 +60,15 @@ python main.py -n dummy_data/topology.json -t dummy_data/streams.json -e dummy_d
 
 ```
 
+### Input Data
+
+To get more input data, you can use the generation scripts in our adjacent repository ([here]()**TODO add link**).
+
+Inputs files must adhere the format from the generation scripts. Example files are provided in the `dummy_data` folder.
+
 ## Limitations and Changes
+
+We only implement the prudent reservation variant of the algorithm.
 
 This implementation assumes that emergency traffic (ET) has always a higher priority than the time-triggered traffic (TT).
 The original E-TSN paper assumed that there can be higher priority TT streams.
