@@ -20,6 +20,9 @@ and the paper this implementation contributes to:
 
 **TODO add reference to our paper**
 
+For more context please refer to this document: https://doi.org/10.5281/zenodo.19224732
+
+
 ## Requirements
 
 * Python (tested with 3.10)
