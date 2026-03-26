@@ -66,18 +66,13 @@ python main.py -n dummy_data/topology.json -t dummy_data/streams.json -e dummy_d
 
 ### Input Data
 
-To get more input data, you can use the generation scripts in our adjacent repository ([here]()**TODO add link**).
+To get more input data, you can use the generation scripts in our adjacent repository ([here](https://github.com/ustutt-ipvs-vs/eval_wired_sporadic_MKFirm)).
 
 Inputs files must adhere the format from the generation scripts. Example files are provided in the `dummy_data` folder.
 
-## Limitations and Changes
-
-We only implement the prudent reservation variant of the algorithm.
-
-This implementation assumes that emergency traffic (ET) has always a higher priority than the time-triggered traffic (TT).
-The original E-TSN paper assumed that there can be higher priority TT streams.
-
-We added propagation delays and processing delays to the constraints when needed.
-
-Considering the adjacent link constraint: we went with the textual description, not the formal one, since they differ and the textual one makes more sense.
-
+## Limitations and Assumptions
+This implementation 
+- focuses on the prodent slot reservation variant of the algorithm
+- assumes that emergency traffic (ET) has PCP 7 to allow a meaningful comparison with our (m,k)-firm Elevation Policy
+- adds propagation and processing delays to the constraints
+- derives the adjacent link constraint from the textual description of the paper (there appear to be minor mistakes in the formal definition)
